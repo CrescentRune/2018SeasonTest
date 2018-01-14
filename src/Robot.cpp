@@ -27,8 +27,8 @@ public:
 	Encoder *leftDriveEncoder;
 	Encoder *rightDriveEncoder;
 	ADXRS450_Gyro *gyroscope;
-	int ourSwitch, autoState;
-	double autoSpeed = 0.75;
+	int ourSwitch, autoState, initialDist, lTurn1, lTurn2, lDrive3, lDrive2, rTurn1, rTurn2, rDrive3, rDrive2;
+	double autoDriveSpeed, autoTurnSpeed;
 
 	void RobotInit() {
 		//driveTrain = new RobotDrive(DriveFrontLeft, DriveBackLeft, DriveFrontRight, DriveBackRight);
@@ -53,7 +53,8 @@ public:
 		rightJoystick = new Joystick(1);
 		CameraServer::GetInstance()->AddAxisCamera("axis-camera.local");
 		ourSwitch = 0;
-		SwitchboardPost();
+		AutoShuffleboardPost();
+		ShuffleboardPost();
 	}
 
 	/*
@@ -71,7 +72,7 @@ public:
 	 * well.
 	 */
 	void AutonomousInit() override {
-		SwitchboardPost();
+		ShuffleboardPost();
 		std::string gameData;
 		autoState = 0;
 		EncoderReset();
@@ -81,18 +82,15 @@ public:
 		} else {
 			ourSwitch = RightSwitch;
 		}
-
-		SmartDashboard::PutNumber()
 	}
 
 	void AutonomousPeriodic() {
-		double leftEncDist = leftDriveEncoder->GetDistance(), rightEncDist =
-				rightDriveEncoder->GetDistance();
+		double leftEncDist = leftDriveEncoder->GetDistance(), rightEncDist = rightDriveEncoder->GetDistance();
 		double gyroAngle = gyroscope->GetAngle();
 
 		switch (autoState) {
 		case (InitialStart):
-			if (leftEncDist > -420) {
+			if (leftEncDist > initialDist) {
 				driveTrain->TankDrive(autoDriveSpeed, autoDriveSpeed);
 				break;
 			} else {
@@ -101,11 +99,11 @@ public:
 				break;
 			}
 		case (TurnDownMiddle):
-			if (ourSwitch == LeftSwitch && gyroAngle > -35) {
-				driveTrain->TankDrive(-0.65, 0.65);
+			if (ourSwitch == LeftSwitch && gyroAngle > lTurn1) {
+				driveTrain->TankDrive(-autoTurnSpeed, autoTurnSpeed);
 				break;
-			} else if (ourSwitch == RightSwitch && gyroAngle < 55) {
-				driveTrain->TankDrive(0.65, -0.65);
+			} else if (ourSwitch == RightSwitch && gyroAngle < rTurn1) {
+				driveTrain->TankDrive(autoTurnSpeed, -autoTurnSpeed);
 				break;
 			} else {
 				EncoderReset();
@@ -113,8 +111,8 @@ public:
 				break;
 			}
 		case (DriveDiagonal):
-			if (leftEncDist > -1530) {
-				driveTrain->TankDrive(autoSpeed, autoSpeed);
+			if (leftEncDist > rDrive2) {
+				driveTrain->TankDrive(autoDriveSpeed, autoDriveSpeed);
 				break;
 			} else {
 				gyroscope->Reset();
@@ -122,11 +120,11 @@ public:
 				break;
 			}
 		case (FaceSwitch):
-			if (ourSwitch == LeftSwitch && gyroAngle < 45) {
-				driveTrain->TankDrive(0.65, -0.65);
+			if (ourSwitch == LeftSwitch && gyroAngle < lTurn2) {
+				driveTrain->TankDrive(autoTurnSpeed, -autoTurnSpeed);
 				break;
-			} else if (ourSwitch == RightSwitch && gyroAngle > -45) {
-				driveTrain->TankDrive(-0.65, 0.65);
+			} else if (ourSwitch == RightSwitch && gyroAngle > rTurn2) {
+				driveTrain->TankDrive(-autoTurnSpeed, autoTurnSpeed);
 				break;
 			} else {
 				EncoderReset();
@@ -134,8 +132,8 @@ public:
 				break;
 			}
 		case (DriveSideSwitch):
-			if (leftEncDist > -800) {
-				driveTrain->TankDrive(autoSpeed, autoSpeed);
+			if (leftEncDist > rDrive3) {
+				driveTrain->TankDrive(autoDriveSpeed, autoDriveSpeed);
 				break;
 			} else {
 				gyroscope->Reset();
@@ -154,12 +152,12 @@ public:
 
 	void TeleopInit() {
 		EncoderReset();
-		SwitchboardPost();
+		ShuffleboardPost();
 		gyroscope->Reset();
 	}
 
 	void TeleopPeriodic() {
-		SwitchboardPost();
+		ShuffleboardPost();
 		double left = -leftJoystick->GetRawAxis(yAxisJS);
 		double right = -rightJoystick->GetRawAxis(yAxisJS);
 		driveTrain->ArcadeDrive(left * 0.65, right * 0.65);
@@ -183,13 +181,39 @@ public:
 
 	}
 
-	void AutoSwitchboardPost() {
+	void AutoShuffleboardPost() {
 		SmartDashboard::PutNumber("Gyro", gyroscope->GetAngle());
 		SmartDashboard::PutData("Left DriveEncoder", leftDriveEncoder);
-		SmartDashboard::PutData("Right DriveEncoder", leftDriveEncoder);
+		SmartDashboard::PutData("Right DriveEncoder", rightDriveEncoder);
+		SmartDashboard::PutNumber("Auton/initDist", -420);
+		SmartDashboard::PutNumber("Auton/lTurn1", -35);
+		SmartDashboard::PutNumber("Auton/lTurn2", 45);
+//		SmartDashboard::PutNumber("Auton/lDrive2", -1530);
+//		SmartDashboard::PutNumber("Auton/lDrive3", -800);
+		SmartDashboard::PutNumber("Auton/rTurn1", 55);
+		SmartDashboard::PutNumber("Auton/rTurn2", -45);
+		SmartDashboard::PutNumber("Auton/rDrive2", -1530);
+		SmartDashboard::PutNumber("Auton/rDrive3", -800);
+		SmartDashboard::PutNumber("Auton/autoDriveSpeed", 0.8);
+		SmartDashboard::PutNumber("Auton/autoTurnSpeed", 0.65);
 	}
 
-	void SwitchboardPost() {
+
+	void AutoShuffleboardGet() {
+		initialDist    = SmartDashboard::GetNumber("Auton/initDist", -420);
+		lTurn1         = SmartDashboard::GetNumber("Auton/lTurn1", -35);
+		lTurn2         = SmartDashboard::GetNumber("Auton/lTurn2", 45);
+//		lDrive2        = SmartDashboard::GetNumber("Auton/lDrive2", -1530);
+//		lDrive3        = SmartDashboard::GetNumber("Auton/lDrive3", -800);
+		rTurn1         = SmartDashboard::GetNumber("Auton/rTurn1", 55);
+		rTurn2         = SmartDashboard::GetNumber("Auton/rTurn2", -45);
+		rDrive2        = SmartDashboard::GetNumber("Auton/rDrive2", -1530);
+		rDrive3        = SmartDashboard::GetNumber("Auton/rDrive3", -800);
+		autoDriveSpeed = SmartDashboard::GetNumber("Auton/autoDriveSpeed", 0.8);
+		autoTurnSpeed  = SmartDashboard::GetNumber("Auton/autoTurnSpeed", 0.65);
+	}
+
+	void ShuffleboardPost() {
 		SmartDashboard::PutData("Pdp", pdp);
 		SmartDashboard::PutNumber("Talon", talon->GetSelectedSensorPosition(0));
 		SmartDashboard::PutData("Drive", driveTrain);
@@ -199,6 +223,11 @@ public:
 		SmartDashboard::PutNumber("Right DriveEncoder",
 				leftDriveEncoder->GetDistance());
 		SmartDashboard::GetNumber("Autonomous speed: ", 0.75);
+	}
+
+	void DisabledPeriodic(){
+		SmartDashboard::PutNumber("Auton/TestValue", 14);
+
 	}
 
 	void TestPeriodic() {}
