@@ -2,7 +2,8 @@
 /* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
 /* must be accompanied by the FIRST BSD license file in the root directory of */
-/* the project.                                                               */
+/* the project.          													*/
+/* Author: Garrett                                                      						*/
 /*----------------------------------------------------------------------------*/
 
 #include <iostream>
@@ -39,7 +40,7 @@ public:
 		gyroscope = new ADXRS450_Gyro();
 		talon = new TalonSRX(1);
 		victor = new VictorSPX(2);
-		talon->Follow(*victor);
+//		talon->Follow(*victor);
 		pdp = new PowerDistributionPanel(0);
 		leftDriveEncoder = new Encoder(EncoderLeftA, EncoderLeftB);
 		rightDriveEncoder = new Encoder(EncoderRightA, EncoderRightB);
@@ -73,8 +74,9 @@ public:
 	 */
 	void AutonomousInit() override {
 		ShuffleboardPost();
+		AutoShuffleboardPost();
 		std::string gameData;
-		autoState = 0;
+		autoState = InitialStart;
 		EncoderReset();
 		gameData = frc::DriverStation::GetInstance().GetGameSpecificMessage();
 		if (gameData[0] == 'L') {
@@ -85,8 +87,10 @@ public:
 	}
 
 	void AutonomousPeriodic() {
-		double leftEncDist = leftDriveEncoder->GetDistance(), rightEncDist = rightDriveEncoder->GetDistance();
+		double leftEncDist = leftDriveEncoder->GetDistance();
 		double gyroAngle = gyroscope->GetAngle();
+		AutoShuffleboardGet();
+		SmartDashboard::PutNumber("AutoCase", autoState);
 
 		switch (autoState) {
 		case (InitialStart):
@@ -170,21 +174,21 @@ public:
 			talon->Set(ControlMode::PercentOutput, 0);
 		}
 
-//		if (leftJoystick->GetRawButton(trigger)) {
-//			victor->Set(ControlMode::PercentOutput, 1);
+//		if (rightJoystick->GetRawButton(trigger)) {
+//			victor->Set(ControlMode::PercentOutput, -0.3);
 //		} else if (leftJoystick->GetRawButton(leftButton)) {
 //			victor->Set(ControlMode::PercentOutput, -1);
 //		} else {
 //			victor->Set(ControlMode::PercentOutput, 0);
 //		}
-
+//		SmartDashboard::PutNumber("Intake speed:", rightJoystick->GetRawAxis(3));
 
 	}
 
 	void AutoShuffleboardPost() {
 		SmartDashboard::PutNumber("Gyro", gyroscope->GetAngle());
-		SmartDashboard::PutData("Left DriveEncoder", leftDriveEncoder);
-		SmartDashboard::PutData("Right DriveEncoder", rightDriveEncoder);
+		SmartDashboard::PutData("LeftDriveEncoder", leftDriveEncoder);
+		SmartDashboard::PutData("RightDriveEncoder", rightDriveEncoder);
 		SmartDashboard::PutNumber("Auton/initDist", -420);
 		SmartDashboard::PutNumber("Auton/lTurn1", -35);
 		SmartDashboard::PutNumber("Auton/lTurn2", 45);
