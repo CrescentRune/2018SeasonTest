@@ -74,7 +74,6 @@ public:
 	 */
 	void AutonomousInit() override {
 		ShuffleboardPost();
-		AutoShuffleboardPost();
 		std::string gameData;
 		autoState = InitialStart;
 		EncoderReset();
@@ -115,10 +114,14 @@ public:
 				break;
 			}
 		case (DriveDiagonal):
-			if (leftEncDist > rDrive2) {
+			if (ourSwitch == RightSwitch && leftEncDist > rDrive2) {
 				driveTrain->TankDrive(autoDriveSpeed, autoDriveSpeed);
 				break;
-			} else {
+			} else if (ourSwitch == LeftSwitch && leftEncDist > lDrive2) {
+				driveTrain->TankDrive(autoDriveSpeed, autoDriveSpeed);
+				break;
+			}
+			else {
 				gyroscope->Reset();
 				autoState = FaceSwitch;
 				break;
@@ -136,10 +139,14 @@ public:
 				break;
 			}
 		case (DriveSideSwitch):
-			if (leftEncDist > rDrive3) {
+			if (ourSwitch == RightSwitch && leftEncDist > rDrive3) {
 				driveTrain->TankDrive(autoDriveSpeed, autoDriveSpeed);
 				break;
-			} else {
+			} else if ( ourSwitch == LeftSwitch && leftEncDist > lDrive3){
+				driveTrain->TankDrive(autoDriveSpeed, autoDriveSpeed);
+				break;
+			}
+			else {
 				gyroscope->Reset();
 				autoState = DeployBlock;
 				break;
@@ -192,12 +199,12 @@ public:
 		SmartDashboard::PutNumber("Auton/initDist", -420);
 		SmartDashboard::PutNumber("Auton/lTurn1", -35);
 		SmartDashboard::PutNumber("Auton/lTurn2", 45);
-//		SmartDashboard::PutNumber("Auton/lDrive2", -1530);
-//		SmartDashboard::PutNumber("Auton/lDrive3", -800);
+		SmartDashboard::PutNumber("Auton/lDrive2", -1200);
+		SmartDashboard::PutNumber("Auton/lDrive3", -550);
 		SmartDashboard::PutNumber("Auton/rTurn1", 55);
 		SmartDashboard::PutNumber("Auton/rTurn2", -45);
 		SmartDashboard::PutNumber("Auton/rDrive2", -1530);
-		SmartDashboard::PutNumber("Auton/rDrive3", -800);
+		SmartDashboard::PutNumber("Auton/rDrive3", -600);
 		SmartDashboard::PutNumber("Auton/autoDriveSpeed", 0.8);
 		SmartDashboard::PutNumber("Auton/autoTurnSpeed", 0.65);
 	}
@@ -207,8 +214,8 @@ public:
 		initialDist    = SmartDashboard::GetNumber("Auton/initDist", -420);
 		lTurn1         = SmartDashboard::GetNumber("Auton/lTurn1", -35);
 		lTurn2         = SmartDashboard::GetNumber("Auton/lTurn2", 45);
-//		lDrive2        = SmartDashboard::GetNumber("Auton/lDrive2", -1530);
-//		lDrive3        = SmartDashboard::GetNumber("Auton/lDrive3", -800);
+		lDrive2        = SmartDashboard::GetNumber("Auton/lDrive2", -1530);
+		lDrive3        = SmartDashboard::GetNumber("Auton/lDrive3", -500);
 		rTurn1         = SmartDashboard::GetNumber("Auton/rTurn1", 55);
 		rTurn2         = SmartDashboard::GetNumber("Auton/rTurn2", -45);
 		rDrive2        = SmartDashboard::GetNumber("Auton/rDrive2", -1530);
