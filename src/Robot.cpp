@@ -147,7 +147,6 @@ public:
 				break;
 			}
 			else {
-				gyroscope->Reset();
 				autoState = DeployBlock;
 				break;
 			}
@@ -218,8 +217,8 @@ public:
 		lDrive3        = SmartDashboard::GetNumber("Auton/lDrive3", -500);
 		rTurn1         = SmartDashboard::GetNumber("Auton/rTurn1", 55);
 		rTurn2         = SmartDashboard::GetNumber("Auton/rTurn2", -45);
-		rDrive2        = SmartDashboard::GetNumber("Auton/rDrive2", -1530);
-		rDrive3        = SmartDashboard::GetNumber("Auton/rDrive3", -800);
+		rDrive2        = SmartDashboard::GetNumber("Auton/rDrive2", -1200);
+		rDrive3        = SmartDashboard::GetNumber("Auton/rDrive3", -790);
 		autoDriveSpeed = SmartDashboard::GetNumber("Auton/autoDriveSpeed", 0.8);
 		autoTurnSpeed  = SmartDashboard::GetNumber("Auton/autoTurnSpeed", 0.65);
 	}
