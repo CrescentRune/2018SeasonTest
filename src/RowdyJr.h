@@ -9,7 +9,7 @@
 #define SRC_ROWDYJR_H_
 
 enum EncoderPorts {
-	EncoderLeftA = 0, EncoderLeftB, EncoderRightA, EncoderRightB
+	EncoderLeftA = 0, EncoderLeftB, EncoderRightA = 4, EncoderRightB
 };
 
 enum PWM {
